@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // Here we import the KeyboardAvoidingView from react-native-keyboard-controller,
@@ -8,35 +8,47 @@ import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-nativ
 import { useNotes } from '@/storage/storagecontext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Link, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 export default function NewNoteScreen() {
   const router = useRouter();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const { refresh, addNote } = useNotes();
+  const params = useLocalSearchParams<{ id: string; title: string; content: string }>();
+  const [title, setTitle] = useState(params.title ?? '');
+  const [content, setContent] = useState(params.content ?? '');
 
-  const onAdd = async () => {
+  useEffect(() => {
+    setTitle(params.title ?? '');
+    setContent(params.content ?? '');
+  }, [params.id]);
+  const { editNote, deleteNote } = useNotes();
+  
+  const onEdit = async () => {
     const trimmedTitle = title.trim();
     const trimmedContent = content.trim();
     if (trimmedTitle) {
-      const { error } = await addNote(trimmedTitle, trimmedContent);
+      const { error } = await editNote(Number(params.id), trimmedTitle, trimmedContent);
 
       if (error) {
-        console.error('Error adding a note:', error);
+        console.error('Error editing note:', error);
       } else {
-        setTitle('');
-        setContent('');
-        refresh();
-        router.push('/(tabs)');
+        router.navigate("/(tabs)/notes");
       }
     }
   };
 
+  const onDelete = async () => {
+    const { error } = await deleteNote(Number(params.id))
+  };
+
+
+
   return (
     <SafeAreaView>
       <View>
-        <Text style={styles.sitetext}>Add a note</Text>
+        <View >
+          <Text style={styles.sitetext}>Edit note</Text>
+        </View>
+        
         <TextInput
         style ={styles.text}
           placeholder="Title"
@@ -52,20 +64,21 @@ export default function NewNoteScreen() {
           value={content}
           onChangeText={setContent}
         />
-        <TouchableOpacity style={styles.edit} onPress={onAdd}>
-        <Text style={styles.editText}>Add</Text>
-          </TouchableOpacity>
+<TouchableOpacity style={styles.edit} onPress={onEdit}>
+  <Text style={styles.editText}>Save</Text>
+</TouchableOpacity>
 
-      <TouchableOpacity style={styles.edit}>
-       
-        <Link href={"/(tabs)/notes"}> <Text style={styles.editText}>Cancel </Text> </Link>
-      
-      </TouchableOpacity>
+<TouchableOpacity style={styles.edit} onPress={() => router.back()}>
+  <Text style={styles.editText}>Cancel</Text>
+</TouchableOpacity>
+
+<TouchableOpacity style={styles.delete} onPress={onDelete}>
+  <Text style={styles.editText}>Delete</Text>
+</TouchableOpacity>
       </View>
     </SafeAreaView>
   );
-}
-
+};
 
 const styles = StyleSheet.create({
     sitetext: {
@@ -92,4 +105,9 @@ const styles = StyleSheet.create({
         marginLeft: 10,
 
     },
+    delete: {
+      backgroundColor: "red",
+      marginTop: 15,
+      padding: 10,
+    }
 });

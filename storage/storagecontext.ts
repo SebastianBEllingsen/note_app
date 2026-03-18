@@ -1,6 +1,8 @@
 
 import { supabase } from '@/utils/supbase';
 import { useCallback, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
+
 
 export interface Note {
   id: number;
@@ -80,6 +82,64 @@ export function useNotes() {
       return { data: null, error: e };
     }
   }, [refresh]);
+  
+    const editNote = useCallback(async (id: number, title: string, content: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      const { data, error } = await supabase
+        .from('notes')
+        .update({ title, content })
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .select()
 
-  return { notes, setNotes, refresh, loading, addNote } as const;
+      console.log('editNote id:', id, 'user:', user.id, 'data:', data, 'error:', error);
+
+      if (!error) {
+        await refresh();
+      }
+
+      return { data, error };
+    } catch (e) {
+      console.error('addFact error', e);
+      return { data: null, error: e };
+    }
+  }, [refresh]);
+
+const deleteNote = useCallback(async (id: number) => {
+  Alert.alert(
+    "Before you proceed",
+    "Are you sure you want to delete?",
+    [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Yes',
+        onPress: async () => {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
+            const { data, error } = await supabase
+              .from('notes')
+              .delete()
+              .eq('id', id)
+              .eq('user_id', user.id)
+              .select();
+
+            console.log('deleteNote id:', id, 'user:', user.id, 'data:', data, 'error:', error);
+
+            if (!error) {
+              await refresh();
+            }
+          } catch (e) {
+            console.error('deleteNote error', e);
+          }
+        },
+      },
+    ]
+  );
+}, [refresh]);
+
+  return { notes, setNotes, deleteNote, refresh, loading, addNote, editNote } as const;
 }

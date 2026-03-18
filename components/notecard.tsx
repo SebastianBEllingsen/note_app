@@ -9,9 +9,10 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 interface Props {
     note: Note;
     index: number;
+    onEdit: (note: Note) => void;
 }
 
-const NoteCard = ({ note, index }: Props) => {
+const NoteCard = ({ note, index, onEdit }: Props) => {
     return (
         <Pressable
             style={styles.card}
@@ -19,6 +20,9 @@ const NoteCard = ({ note, index }: Props) => {
             android_ripple={{ color: '#ccc' }}>
             <Text style={styles.title}>{note.title}</Text>
             <Text style={styles.text}>{note.content}</Text>
+            <Pressable style={styles.edit} onPress={() => onEdit(note)}>
+                <Text style={styles.editText}>Edit</Text>
+            </Pressable>
         </Pressable>
     );
 };
@@ -38,6 +42,14 @@ const styles = StyleSheet.create({
     text: {
         fontSize: 16,
     },
+    edit: {
+        marginTop: 10,
+        padding: 10,
+        backgroundColor: '#223045'
+    },
+    editText: {
+        color: 'white',
+    }
 });
 
 // Exporting the component so it can be used in other parts of the app
