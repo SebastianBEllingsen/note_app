@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store'
 import { Platform } from 'react-native'
 import 'react-native-url-polyfill/auto'
 
+
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL
 const supabasePublishKey = process.env.EXPO_PUBLIC_SUPABASE_KEY
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY

@@ -34,7 +34,7 @@ export function useNotes() {
         const notesFromDb = await fetchLatestNotes();
         if (mounted) setNotes(notesFromDb);
       } catch (e) {
-        // ignore errors - we have no local cache
+        console.error('Failed to fetch notes:', e);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -64,9 +64,11 @@ export function useNotes() {
 
   const addNote = useCallback(async (title: string, content: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Inserting note as user:', user?.id);
       const { data, error } = await supabase
         .from('notes')
-        .insert({ title, content });
+        .insert({ title, content, user_id: user?.id });
       
       if (!error) {
         await refresh();
