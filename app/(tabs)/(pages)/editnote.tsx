@@ -36,6 +36,7 @@ export default function NewNoteScreen() {
     }
   };
 
+  //så lenge d funke, ellers fiks denna
   const onDelete = async () => {
     const { error } = await deleteNote(Number(params.id))
   };
