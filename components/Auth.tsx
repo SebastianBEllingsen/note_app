@@ -1,7 +1,8 @@
 import { supabase } from '@/utils/supbase'
 import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function Auth() {
   const [email, setEmail] = useState('')
@@ -40,6 +41,8 @@ export default function Auth() {
   }
 
   return (
+    <SafeAreaView style={{ flex: 1 }}>
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
     <View style={styles.container}>
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <Text style={styles.label}>Email</Text>
@@ -82,6 +85,10 @@ export default function Auth() {
         </TouchableOpacity>
       </View>
     </View>
+    </KeyboardAvoidingView>
+    </SafeAreaView>
+
+
   )
 }
 

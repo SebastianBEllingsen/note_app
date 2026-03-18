@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // Here we import the KeyboardAvoidingView from react-native-keyboard-controller,
 // instead of the original from react-native. Because it works better in many cases.
@@ -28,6 +28,7 @@ export default function NewNoteScreen() {
         setTitle('');
         setContent('');
         refresh();
+        Alert.alert("Success")
         router.push('/(tabs)');
       }
     }

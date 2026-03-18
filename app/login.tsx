@@ -8,9 +8,11 @@ export default function LoginScreen() {
   return (
     <>
       <Stack.Screen options={{ title: 'Login' }} />
-      <ThemedView style={styles.container}>
-        <Auth />
-      </ThemedView>
+        <ThemedView style={styles.container}>
+          <Auth />
+        </ThemedView>
+
+
     </>
   )
 }

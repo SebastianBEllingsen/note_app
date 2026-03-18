@@ -8,19 +8,25 @@ export interface Note {
   id: number;
   title: string;
   content: string;
+  created_at: string;
+  updated_at: string | null;
+  username: string | null;
 }
 
 async function fetchLatestNotes(limit = 100) {
   const { data, error } = await supabase
     .from('notes')
-    .select('id, title, content')
+    .select('id, title, content, created_at, updated_at, profiles(username)')
     .limit(limit);
 
   if (error) throw error;
-  console.log('error:', error)
-  console.log('Data:', data)
-  return data as Note[];
+  const notes = (data ?? []).map((n: any) => ({
+    ...n,
+    username: n.profiles?.username ?? null,
+  }));
+  return notes as Note[];
 }
+
 
 
 // A custom hook to get and set cat facts in storage (AsyncStorage + Supabase sync)
@@ -89,7 +95,7 @@ export function useNotes() {
       if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('notes')
-        .update({ title, content })
+        .update({ title, content})
         .eq('id', id)
         .eq('user_id', user.id)
         .select()

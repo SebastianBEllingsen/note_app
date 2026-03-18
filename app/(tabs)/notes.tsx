@@ -25,7 +25,7 @@ export default function NotesScreen() {
   };
 
   return (
-      <SafeAreaView>
+  <SafeAreaView style={{flex:1}}>
         <Text style={styles.text}>Work Notes</Text>
       <View style={styles.edit}>
         <Link href="/(tabs)/(pages)/newnote">
@@ -33,13 +33,17 @@ export default function NotesScreen() {
         </Link>
       </View>
       <FlatList
+        contentContainerStyle={{ padding: 16, paddingBottom: 15 }}
         data={notes}
         renderItem={({ item, index }) => <NoteCard note={item} index={index} onEdit={onEdit} />}
-        refreshControl={
+        refreshControl=
+        {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       />
-    </SafeAreaView>
+  </SafeAreaView>
+
+
   );
 };
 
@@ -57,5 +61,6 @@ const styles = StyleSheet.create({
     },
     editText: {
         color: 'white',
-    }
+    },
+
 });

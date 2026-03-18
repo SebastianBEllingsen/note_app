@@ -23,6 +23,10 @@ const NoteCard = ({ note, index, onEdit }: Props) => {
             <Pressable style={styles.edit} onPress={() => onEdit(note)}>
                 <Text style={styles.editText}>Edit</Text>
             </Pressable>
+            <Text style={styles.usernametext}>{note.username}</Text>
+            <Text style={styles.timetext}>
+                {note.updated_at ? `Edited ${note.updated_at}` : note.created_at}
+            </Text>
         </Pressable>
     );
 };
@@ -31,8 +35,7 @@ const NoteCard = ({ note, index, onEdit }: Props) => {
 const styles = StyleSheet.create({
     card: {
         backgroundColor: 'white',
-        padding: 15,
-        marginBottom: 10,
+        padding: 10,
         borderRadius: 10},
     title: {
         fontSize: 18,
@@ -41,6 +44,17 @@ const styles = StyleSheet.create({
     },
     text: {
         fontSize: 16,
+    },
+    usernametext: {
+        fontSize: 16,
+        padding: 5,
+        color: "#9116a1"
+    },
+    timetext: {
+        fontSize: 10,
+        padding: 3,
+        marginTop: 10,
+        color: "gray"
     },
     edit: {
         marginTop: 10,
