@@ -20,7 +20,7 @@ export default function NotesScreen() {
   const onEdit = (note: Note) => {
     router.push({
       pathname: '/(tabs)/(pages)/editnote',
-      params: { id: note.id, title: note.title, content: note.content },
+      params: { id: note.id, title: note.title, content: note.content, imageUrl: note.imageUrl ?? '' },
     });
   };
 
