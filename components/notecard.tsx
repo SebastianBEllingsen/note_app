@@ -9,15 +9,14 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface Props {
   note: Note;
-  index: number;
   onEdit: (note: Note) => void;
 }
 
-const NoteCard = ({ note, index, onEdit }: Props) => {
+const NoteCard = ({ note, onEdit }: Props) => {
   return (
     <Pressable
       style={styles.card}
-      onPress={() => console.log(`Note ${index + 1} pressed`)}
+      onPress={() => {}}
       android_ripple={{ color: "#ccc" }}
     >
       <Text style={styles.title}>{note.title}</Text>
@@ -34,11 +33,11 @@ const NoteCard = ({ note, index, onEdit }: Props) => {
         />
       </View>
       <Pressable style={styles.edit} onPress={() => onEdit(note)}>
-        <Text style={styles.editText}>Edit</Text>
+        <Text style={styles.editText}>Rediger</Text>
       </Pressable>
       <Text style={styles.usernametext}>{note.username}</Text>
       <Text style={styles.timetext}>
-        {note.updated_at ? `Edited ${note.updated_at}` : note.created_at}
+        {note.updated_at ? `Redigert ${note.updated_at}` : note.created_at}
       </Text>
     </Pressable>
   );

@@ -1,5 +1,6 @@
 import { AuthContext, Profile } from '@/hooks/use-auth-context'
 import { supabase } from '@/utils/supbase'
+import { savePushToken } from '@/utils/notifications'
 import { Session } from '@supabase/supabase-js'
 import { PropsWithChildren, useEffect, useState } from 'react'
 
@@ -39,6 +40,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (session?.user.id) {
       refreshProfile()
+      savePushToken(session.user.id)
     } else {
       setProfile(null)
     }

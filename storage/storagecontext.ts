@@ -1,6 +1,5 @@
 import { supabase } from "@/utils/supbase";
 import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
 
 export interface Note {
   id: number;
@@ -12,35 +11,42 @@ export interface Note {
   imageUrl: string | null;
 }
 
-async function fetchLatestNotes(limit = 100) {
+const PAGE_SIZE = 5;
+
+async function fetchNotesPage(start: number, end: number) {
   const { data, error } = await supabase
     .from("notes")
     .select(
       "id, title, content, created_at, updated_at, imageUrl, profiles(username)",
     )
-    .limit(limit);
+    .range(start, end);
 
   if (error) throw error;
   const notes = (data ?? []).map((n: any) => ({
     ...n,
     username: n.profiles?.username ?? null,
   }));
-  console.log(notes);
   return notes as Note[];
 }
 
-// A custom hook to get and set cat facts in storage (AsyncStorage + Supabase sync)
+// A custom hook to get and set notes with pagination support
 export function useNotes() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
         setLoading(true);
-        const notesFromDb = await fetchLatestNotes();
-        if (mounted) setNotes(notesFromDb);
+        const initial = await fetchNotesPage(0, PAGE_SIZE - 1);
+        if (mounted) {
+          setNotes(initial);
+          setOffset(PAGE_SIZE);
+          setHasMore(initial.length === PAGE_SIZE);
+        }
       } catch (e) {
         console.error("Failed to fetch notes:", e);
       } finally {
@@ -50,18 +56,16 @@ export function useNotes() {
 
     return () => {
       mounted = false;
-      try {
-        const ch = (globalThis as any).__notes_channel;
-        if (ch && typeof ch.unsubscribe === "function") ch.unsubscribe();
-      } catch {}
     };
   }, []);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const notesFromDb = await fetchLatestNotes();
-      setNotes(notesFromDb);
+      const initial = await fetchNotesPage(0, PAGE_SIZE - 1);
+      setNotes(initial);
+      setOffset(PAGE_SIZE);
+      setHasMore(initial.length === PAGE_SIZE);
     } catch (e) {
       console.error("Failed to refresh Notes", e);
     } finally {
@@ -69,13 +73,27 @@ export function useNotes() {
     }
   }, []);
 
+  const loadMore = useCallback(async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    try {
+      const more = await fetchNotesPage(offset, offset + PAGE_SIZE - 1);
+      setNotes((prev) => [...prev, ...more]);
+      setOffset((prev) => prev + PAGE_SIZE);
+      setHasMore(more.length === PAGE_SIZE);
+    } catch (e) {
+      console.error("Failed to load more notes:", e);
+    } finally {
+      setLoading(false);
+    }
+  }, [loading, hasMore, offset]);
+
   const addNote = useCallback(
     async (title: string, content: string, imageUrl: string) => {
       try {
         const {
           data: { user },
         } = await supabase.auth.getUser();
-        console.log("Inserting note as user:", user?.id);
         const { data, error } = await supabase
           .from("notes")
           .insert({ title, content, imageUrl, user_id: user?.id });
@@ -86,7 +104,7 @@ export function useNotes() {
 
         return { data, error };
       } catch (e) {
-        console.error("addFact error", e);
+        console.error("addNote error", e);
         return { data: null, error: e };
       }
     },
@@ -107,26 +125,13 @@ export function useNotes() {
           .eq("user_id", user.id)
           .select();
 
-        console.log(
-          "editNote id:",
-          id,
-          "user:",
-          user.id,
-          "imageurl: ",
-          imageUrl,
-          "data:",
-          data,
-          "error:",
-          error,
-        );
-
         if (!error) {
           await refresh();
         }
 
         return { data, error };
       } catch (e) {
-        console.error("addFact error", e);
+        console.error("editNote error", e);
         return { data: null, error: e };
       }
     },
@@ -135,44 +140,28 @@ export function useNotes() {
 
   const deleteNote = useCallback(
     async (id: number) => {
-      Alert.alert("Before you proceed", "Are you sure you want to delete?", [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Yes",
-          onPress: async () => {
-            try {
-              const {
-                data: { user },
-              } = await supabase.auth.getUser();
-              if (!user) throw new Error("Not authenticated");
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
 
-              const { data, error } = await supabase
-                .from("notes")
-                .delete()
-                .eq("id", id)
-                .eq("user_id", user.id)
-                .select();
+        const { error } = await supabase
+          .from("notes")
+          .delete()
+          .eq("id", id)
+          .eq("user_id", user.id)
+          .select();
 
-              console.log(
-                "deleteNote id:",
-                id,
-                "user:",
-                user.id,
-                "data:",
-                data,
-                "error:",
-                error,
-              );
+        if (!error) {
+          await refresh();
+        }
 
-              if (!error) {
-                await refresh();
-              }
-            } catch (e) {
-              console.error("deleteNote error", e);
-            }
-          },
-        },
-      ]);
+        return { error };
+      } catch (e) {
+        console.error("deleteNote error", e);
+        return { error: e };
+      }
     },
     [refresh],
   );
@@ -183,6 +172,8 @@ export function useNotes() {
     deleteNote,
     refresh,
     loading,
+    loadMore,
+    hasMore,
     addNote,
     editNote,
   } as const;

@@ -10,6 +10,7 @@ import {
   useCameraPermissions,
 } from "expo-camera";
 import { Image } from "expo-image";
+import { useIsFocused } from "@react-navigation/native";
 import { useRef, useState } from "react";
 import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 export default function Camera() {
@@ -19,6 +20,7 @@ export default function Camera() {
     title: string;
     content: string;
   }>();
+  const isFocused = useIsFocused();
   const [permission, requestPermission] = useCameraPermissions();
   const ref = useRef<CameraView>(null);
   const [uri, setUri] = useState<string | null>(null);
@@ -34,9 +36,9 @@ export default function Camera() {
     return (
       <View style={styles.container}>
         <Text style={{ textAlign: "center" }}>
-          We need your permission to use the camera
+          Vi trenger tillatelse til å bruke kameraet
         </Text>
-        <Button onPress={requestPermission} title="Grant permission" />
+        <Button onPress={requestPermission} title="Gi tillatelse" />
       </View>
     );
   }
@@ -65,8 +67,7 @@ export default function Camera() {
       return;
     }
     setRecording(true);
-    const video = await ref.current?.recordAsync();
-    console.log({ video });
+    await ref.current?.recordAsync();
   };
 
   const toggleMode = () => {
@@ -85,7 +86,7 @@ export default function Camera() {
           contentFit="contain"
           style={{ width: 300, aspectRatio: 1 }}
         />
-        <Button onPress={() => setUri(null)} title="Take another picture" />
+        <Button onPress={() => setUri(null)} title="Ta et nytt bilde" />
       </View>
     );
   };
@@ -93,14 +94,16 @@ export default function Camera() {
   const renderCamera = () => {
     return (
       <View style={styles.cameraContainer}>
-        <CameraView
-          style={styles.camera}
-          ref={ref}
-          mode={mode}
-          facing={facing}
-          mute={false}
-          responsiveOrientationWhenOrientationLocked
-        />
+        {isFocused && (
+          <CameraView
+            style={styles.camera}
+            ref={ref}
+            mode={mode}
+            facing={facing}
+            mute={false}
+            responsiveOrientationWhenOrientationLocked
+          />
+        )}
         <View style={styles.shutterContainer}>
           <Pressable onPress={toggleMode}>
             {mode === "picture" ? (

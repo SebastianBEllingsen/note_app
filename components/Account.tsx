@@ -8,7 +8,6 @@ import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'reac
 export default function Account({ userId, email }: { userId: string; email?: string }) {
   const [loading, setLoading] = useState(true)
   const [username, setUsername] = useState('')
-  const [website, setWebsite] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
   const router = useRouter()
   const { refreshProfile } = useAuthContext()
@@ -23,7 +22,7 @@ export default function Account({ userId, email }: { userId: string; email?: str
 
       let { data, error, status } = await supabase
         .from('profiles')
-        .select(`username, website, avatar_url`)
+        .select(`username, avatar_url`)
         .eq('id', userId)
         .single()
       if (error && status !== 406) {
@@ -32,7 +31,6 @@ export default function Account({ userId, email }: { userId: string; email?: str
 
       if (data) {
         setUsername(data.username)
-        setWebsite(data.website)
         setAvatarUrl(data.avatar_url)
       }
     } catch (error) {
@@ -46,11 +44,9 @@ export default function Account({ userId, email }: { userId: string; email?: str
 
   async function updateProfile({
     username,
-    website,
     avatar_url,
   }: {
     username: string
-    website: string
     avatar_url: string
   }) {
     try {
@@ -59,9 +55,8 @@ export default function Account({ userId, email }: { userId: string; email?: str
       const updates = {
         id: userId,
         username,
-        website,
         avatar_url,
-        updated_at: new Date(),
+        updated_at: new Date().toISOString(),
       }
 
       let { error } = await supabase.from('profiles').upsert(updates)
@@ -93,7 +88,7 @@ export default function Account({ userId, email }: { userId: string; email?: str
           url={avatarUrl}
           onUpload={(url: string) => {
             setAvatarUrl(url)
-            updateProfile({ username, website, avatar_url: url })
+            updateProfile({ username, avatar_url: url })
           }}
         />
       </View>
@@ -113,19 +108,11 @@ export default function Account({ userId, email }: { userId: string; email?: str
           onChangeText={(text) => setUsername(text)}
         />
       </View>
-      <View style={styles.verticallySpaced}>
-        <Text style={styles.label}>Website</Text>
-        <TextInput
-          style={styles.input}
-          value={website || ''}
-          onChangeText={(text) => setWebsite(text)}
-        />
-      </View>
 
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={() => updateProfile({ username, website, avatar_url: avatarUrl })}
+          onPress={() => updateProfile({ username, avatar_url: avatarUrl })}
           disabled={loading}
         >
           <Text style={styles.buttonText}>
