@@ -53,7 +53,7 @@ jest.mock('react-native-safe-area-context', () => {
 beforeEach(() => {
   jest.clearAllMocks();
   mockAddNote.mockResolvedValue({ data: {}, error: null });
-  jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, buttons) => {
+  jest.spyOn(Alert, 'alert').mockImplementation((_title, _msg, _buttons) => {
     // Auto-press the first button (the success "Suksess" alert dismiss)
   });
 });
@@ -62,9 +62,9 @@ describe('NewNoteScreen - Unit Test', () => {
   it('navigates to home screen after successfully creating a note', async () => {
     const { getByPlaceholderText, getByText } = render(<NewNoteScreen />);
 
-    fireEvent.changeText(getByPlaceholderText('Title'), 'My Test Note');
-    fireEvent.changeText(getByPlaceholderText('Content'), 'Some content here');
-    fireEvent.press(getByText('Add'));
+    fireEvent.changeText(getByPlaceholderText('Tittel'), 'My Test Note');
+    fireEvent.changeText(getByPlaceholderText('Innhold'), 'Some content here');
+    fireEvent.press(getByText('Legg til'));
 
     await waitFor(() => {
       expect(mockAddNote).toHaveBeenCalledWith('My Test Note', 'Some content here', '');
@@ -78,7 +78,7 @@ describe('NewNoteScreen - Unit Test', () => {
   it('does not navigate if title is empty', async () => {
     const { getByText } = render(<NewNoteScreen />);
 
-    fireEvent.press(getByText('Add'));
+    fireEvent.press(getByText('Legg til'));
 
     await waitFor(() => {
       expect(mockAddNote).not.toHaveBeenCalled();

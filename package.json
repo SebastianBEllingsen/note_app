@@ -20,7 +20,9 @@
       "^@/(.*)$": "<rootDir>/$1",
       "^expo-image$": "<rootDir>/__mocks__/expo-image.js"
     },
-    "setupFiles": ["<rootDir>/jest.setup.js"]
+    "setupFiles": [
+      "<rootDir>/jest.setup.js"
+    ]
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

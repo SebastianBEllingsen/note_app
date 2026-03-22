@@ -1,50 +1,109 @@
-# Welcome to your Expo app 👋
+# Notes App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile app for creating and sharing notes, built as a university project using React Native (Expo) and Supabase. You can write notes, attach photos, and get push notifications when someone else posts something.
 
-## Get started
+## What it does
 
-1. Install dependencies
+- Sign up / log in with email and password
+- Create, edit, and delete notes, optionally with an image attached
+- Take photos or record video with the camera, or just pick something from your gallery
+- Set up your profile with a username and avatar
+- Get a push notification when another user creates a note
 
-   ```bash
-   npm install
-   ```
+## The Stack used
 
-2. Start the app
+- React Native + Expo SDK 54
+- Expo Router for navigation (file-based)
+- Supabase for the database, auth, file storage, and edge functions
+- Push notifications via Expo Notifications + a Supabase Edge Function written in Deno
+- TypeScript
 
-   ```bash
-   npx expo start
-   ```
+## Getting started
 
-In the output, you'll find options to open the app in a
+You'll need Node.js v18+, and a Supabase project set up.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+npm install -g eas-cli
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Create a `.env` file at the project root with your Supabase credentials (find these under Settings then API in your Supabase dashboard):
 
-## Learn more
+.env
+```
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### Supabase setup
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Youl need to create these tables and buckets in your Supabase project:
 
-## Join the community
+**Tables:**
+- `notes` — `id`, `title`, `content`, `imageUrl`, `user_id`, `created_at`, `updated_at`
+- `profiles` — `id`, `username`, `avatar_url`, `push_token`, `email`
 
-Join our community of developers creating universal apps.
+**Storage buckets** (both public):
+- `images` — for note attachments
+- `avatars` — for profile pictures
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+**Edge function:**
+- Deploy `supabase/functions/notify-new-note/` — this sends push notifications whenever a new note is created
+
+## Running locally
+
+```bash
+npx expo start          # start the dev server
+npx expo run:android    # open on Android emulator
+npm run ios        # open on iOS simulator
+npm run web        # open in browser
+```
+I exclusively used "npx expo:android"
+some functionalitty like the push notifications doesnt always work with expo start, and ios you need a mac to emulate, unless using expo go app.
+
+## Building an APK
+
+The project uses [EAS Build](https://docs.expo.dev/build/introduction/). To build locally without uploading to Expo's servers:
+
+```bash
+eas login
+eas build --platform android --profile preview --local
+```
+
+This produces an `.apk` you can sideload directly onto a device or emulator:
+this is because there is limiting on the expo site when builing, which makes you have to wait for queing,
+
+```bash
+adb install path/to/app.apk
+```
+this lets you push/install the package directly on to your android emulator, this is bundled in with the android studio program. adb is "Android Debug Bridge".
+
+## Project structure
+
+```
+note_app/
+├── app/                    # Screens (Expo Router file-based routing)
+│   ├── login.tsx           # Login / sign-up screen
+│   └── (tabs)/
+│       ├── index.tsx       # Home screen
+│       ├── notes.tsx       # Notes list
+│       ├── account.tsx     # User profile
+│       └── (pages)/
+│           ├── newnote.tsx     # Create note
+│           ├── editnote.tsx    # Edit note
+│           ├── camera.tsx      # Camera (photo & video)
+│           └── cameraroll.tsx  # Image picker
+├── components/             # Reusable UI components
+├── providers/              # Auth context provider
+├── storage/                # Notes CRUD (Supabase queries)
+├── utils/                  # Supabase client, notifications, image upload
+├── supabase/functions/     # Deno edge function for push notifications
+└── assets/                 # Icons, images, splash screen
+```
+
+
+## Tests
+
+```bash
+npm test __testname__
+```

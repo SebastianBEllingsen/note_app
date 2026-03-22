@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     });
 
     const result = await expoResponse.json();
-    console.log("Expo push result:", JSON.stringify(result));
+    
 
     return new Response(JSON.stringify({ sent: tokens.length }), {
       status: 200,
